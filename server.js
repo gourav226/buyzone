@@ -234,7 +234,7 @@ app.post('/api/send-otp', async (req, res) => {
         });
         
         console.log(`Real OTP Email Sent to ${email}. OTP is ${otp}`);
-        res.json({ success: true, message: 'OTP sent successfully' });
+        res.json({ success: true, message: 'OTP sent successfully', devOtp: otp });
     } catch (error) {
         console.error('Email error:', error);
         // Fallback for real SMTP failure

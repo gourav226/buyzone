@@ -3,3 +3,4 @@ tunnel.log
 database.json
 .vscode/
 package-lock.json
+.env
