@@ -2,6 +2,27 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+
+// Load environment variables from .env file if it exists
+if (fs.existsSync(path.join(__dirname, '.env'))) {
+    const envContent = fs.readFileSync(path.join(__dirname, '.env'), 'utf-8');
+    envContent.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+            const index = trimmed.indexOf('=');
+            if (index !== -1) {
+                const key = trimmed.substring(0, index).trim();
+                let val = trimmed.substring(index + 1).trim();
+                // Strip quotes if present
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                    val = val.substring(1, val.length - 1);
+                }
+                process.env[key] = val;
+            }
+        }
+    });
+}
+
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 
@@ -138,24 +159,28 @@ async function saveProduct(productData) {
 // Store active OTPs temporarily
 const activeOTPs = {};
 
-// Configure Nodemailer with an automatic test account (Ethereal)
+// Configure Nodemailer
 let transporter;
-nodemailer.createTestAccount((err, account) => {
-    if (err) {
-        console.error('Failed to create a testing account. ' + err.message);
-        return;
-    }
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
+
+if (SMTP_USER && SMTP_PASS) {
     transporter = nodemailer.createTransport({
-        host: account.smtp.host,
-        port: account.smtp.port,
-        secure: account.smtp.secure,
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465, // true for 465, false for 587/other ports
         auth: {
-            user: account.user,
-            pass: account.pass
+            user: SMTP_USER,
+            pass: SMTP_PASS
         }
     });
-    console.log('Test Email Account Created successfully!');
-});
+    console.log('✅ Real SMTP Mail Transporter configured successfully with user:', SMTP_USER);
+} else {
+    console.log('ℹ️ No SMTP_USER and SMTP_PASS environment variables found.');
+    console.log('🚀 Running in Premium Demo Sandbox Mode (OTPs will be displayed on-screen instantly).');
+}
 
 // Initialize DB if it doesn't exist
 if (!fs.existsSync(DB_FILE)) {
@@ -182,30 +207,44 @@ app.post('/api/send-otp', async (req, res) => {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     activeOTPs[email] = otp;
 
+    const isDemoMode = !(SMTP_USER && SMTP_PASS);
+
+    // Remove OTP after 5 minutes
+    setTimeout(() => { delete activeOTPs[email]; }, 5 * 60 * 1000);
+
+    if (isDemoMode) {
+        // Instant response in Demo Sandbox Mode - NO SMTP HANGS OR NETWORK DELAYS!
+        console.log(`[DEMO MODE] OTP for ${email} is ${otp}`);
+        return res.json({
+            success: true,
+            message: 'OTP generated (Demo Mode)',
+            devOtp: otp
+        });
+    }
+
     try {
         if (!transporter) throw new Error("Transporter not ready");
 
-        let info = await transporter.sendMail({
-            from: '"BUY ZONE" <no-reply@buyzone.com>',
+        await transporter.sendMail({
+            from: `"BUY ZONE" <${SMTP_USER}>`,
             to: email,
             subject: 'Your BUY ZONE Login OTP',
             text: `Your login OTP is: ${otp}`,
             html: `<h3>Welcome to BUY ZONE</h3><p>Your login OTP is: <b style="font-size:20px;">${otp}</b></p><p>If you did not request this, please ignore this email.</p>`
         });
         
-        const emailUrl = nodemailer.getTestMessageUrl(info);
-        
-        // Remove OTP after 5 minutes
-        setTimeout(() => { delete activeOTPs[email]; }, 5 * 60 * 1000);
-        
-        console.log(`OTP for ${email} is ${otp}`);
-        console.log(`Preview Email URL: ${emailUrl}`);
-        res.json({ success: true, message: 'OTP sent successfully', emailUrl });
+        console.log(`Real OTP Email Sent to ${email}. OTP is ${otp}`);
+        res.json({ success: true, message: 'OTP sent successfully' });
     } catch (error) {
         console.error('Email error:', error);
-        // Fallback for demo if credentials aren't set
+        // Fallback for real SMTP failure
         console.log(`[FALLBACK] OTP for ${email} is ${otp}`);
-        res.json({ success: true, message: 'OTP sent (Check server console if email failed)' });
+        
+        res.json({ 
+            success: true, 
+            message: 'OTP sent (Check server console if email failed)',
+            devOtp: otp // Send devOtp so they aren't blocked if SMTP fails
+        });
     }
 });
 
@@ -259,7 +298,7 @@ app.post('/api/orders', async (req, res) => {
                 
                 // Email to Admin
                 let adminMailInfo = await transporter.sendMail({
-                    from: '"BUY ZONE System" <no-reply@buyzone.com>',
+                    from: `"BUY ZONE System" <${SMTP_USER || 'no-reply@buyzone.com'}>`,
                     to: adminEmail,
                     subject: `🚨 New Order Placed! Order ID: #${order.id}`,
                     html: `
@@ -276,21 +315,24 @@ app.post('/api/orders', async (req, res) => {
                         </ul>
                         <h3>Delivery Details:</h3>
                         <ul>
+                            <li><b>Buyer Name:</b> ${order.buyerName || 'N/A'}</li>
                             <li><b>Buyer Email:</b> ${email}</li>
+                            <li><b>Buyer Phone:</b> ${order.buyerPhone || 'N/A'}</li>
                             <li><b>Address:</b> ${order.deliveryAddress}</li>
                         </ul>
                     `
                 });
-                console.log(`[Admin Order Email Sent] URL: ${nodemailer.getTestMessageUrl(adminMailInfo)}`);
+                console.log(`[Admin Order Email Sent] URL: ${nodemailer.getTestMessageUrl(adminMailInfo) || 'Real Email Sent'}`);
 
                 // Email to Buyer
                 let buyerMailInfo = await transporter.sendMail({
-                    from: '"BUY ZONE" <no-reply@buyzone.com>',
+                    from: `"BUY ZONE" <${SMTP_USER || 'no-reply@buyzone.com'}>`,
                     to: email,
                     subject: `🎉 Your BUY ZONE Order Confirmed! #${order.id}`,
                     html: `
                         <h2>Order Confirmed!</h2>
-                        <p>Thank you for shopping with us, <b>${order.itemName}</b> is on its way!</p>
+                        <p>Thank you for shopping with us, <b>${order.buyerName || 'Valued Customer'}</b>!</p>
+                        <p>Your product <b>${order.itemName}</b> is on its way!</p>
                         <hr/>
                         <h3>Order Summary:</h3>
                         <ul>
@@ -302,7 +344,7 @@ app.post('/api/orders', async (req, res) => {
                         <p>We hope you enjoy your purchase!</p>
                     `
                 });
-                console.log(`[Buyer Order Email Sent] URL: ${nodemailer.getTestMessageUrl(buyerMailInfo)}`);
+                console.log(`[Buyer Order Email Sent] URL: ${nodemailer.getTestMessageUrl(buyerMailInfo) || 'Real Email Sent'}`);
             }
         } catch (error) {
             console.error('Failed to send order email notification:', error);

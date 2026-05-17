@@ -845,6 +845,13 @@
             </div>
             <div id="otpStep" style="display: none;">
                 <p style="color: #64748b; margin-bottom: 15px;" id="otpMessage"></p>
+                <div id="devOtpContainer" style="display: none; margin-bottom: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; text-align: center; box-shadow: 0 10px 25px -10px rgba(59, 130, 246, 0.2);">
+                    <p style="color: #60a5fa; font-size: 14px; font-weight: 500; margin-bottom: 10px;">
+                        💡 <b>Demo Sandbox Mode Active</b><br/>
+                        Your OTP is: <span id="devOtpVal" style="font-size: 20px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(59, 130, 246, 0.8); letter-spacing: 2px;"></span>
+                    </p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #3b82f6, #2563eb); width: 100%;" onclick="autofillOTP()">Auto-fill OTP & Verify</button>
+                </div>
                 <a id="otpLinkBtn" href="#" target="_blank" class="btn" style="display:none; width: 100%; margin-bottom: 15px; background: #10b981;">👉 Open Inbox to View OTP</a>
                 <input type="text" class="input" id="loginOtp" placeholder="Enter 4-digit OTP" maxlength="4">
                 <button class="btn" style="width: 100%;" onclick="verifyOTP()" id="verifyOtpBtn">Verify OTP</button>
@@ -853,6 +860,7 @@
                 <h3 style="margin-bottom: 15px;">Create Profile</h3>
                 <input type="text" class="input" id="profileName" placeholder="Full Name">
                 <input type="email" class="input" id="profileEmail" placeholder="Email Address">
+                <input type="tel" class="input" id="profilePhone" placeholder="Phone Number (e.g. +91 9977729994)">
                 <input type="text" class="input" id="profileAddress" placeholder="Delivery Address">
                 <button class="btn" style="width: 100%;" onclick="saveProfile()" id="saveProfileBtn">Save & Continue</button>
             </div>
@@ -1024,6 +1032,7 @@
 
                 <h3 style="font-size: 16px; color: #94a3b8; margin-bottom: 10px;">Delivery Details</h3>
                 <input type="text" id="orderName" class="input" placeholder="Full Name">
+                <input type="tel" id="orderPhone" class="input" placeholder="Phone Number">
                 <input type="text" id="orderAddress" class="input" placeholder="Delivery Address">
                 
                 <button class="btn" style="width: 100%; margin-top: 10px;" onclick="confirmOrder()">Place Order Safely</button>
@@ -1039,6 +1048,7 @@
     </div> <!-- End of Main App -->
 
     <script>
+        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
 
         const products = [
             { name: 'Nike Air Max', price: '4999', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', category: 'Shoes' },
@@ -1315,6 +1325,7 @@
             document.getElementById('orderTotalText').innerText = '₹' + total;
             
             document.getElementById('orderName').value = currentUserProfile.name;
+            document.getElementById('orderPhone').value = currentUserProfile.phone || '';
             document.getElementById('orderAddress').value = currentUserProfile.address;
 
             document.getElementById('orderModal').style.display = 'flex';
@@ -1326,8 +1337,9 @@
 
         async function confirmOrder() {
             const name = document.getElementById('orderName').value;
+            const phone = document.getElementById('orderPhone').value;
             const addr = document.getElementById('orderAddress').value;
-            if (!name || !addr) {
+            if (!name || !phone || !addr) {
                 showToast('Please fill delivery details');
                 return;
             }
@@ -1339,7 +1351,9 @@
                 price: currentProduct.price,
                 total: total,
                 date: new Date().toLocaleString(),
-                deliveryAddress: addr
+                deliveryAddress: addr,
+                buyerName: name,
+                buyerPhone: phone
             };
 
             try {
@@ -1347,7 +1361,7 @@
                 const origText = btn.innerHTML;
                 btn.innerHTML = '<span class="spinner"></span> Placing Order...';
                 
-                const res = await fetch('/api/orders', {
+                const res = await fetch(API_BASE + '/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentUserEmail, order: newOrder })
@@ -1393,7 +1407,7 @@
                 currentUserEmail = currentUserProfile.email;
                 
                 try {
-                    const orderResponse = await fetch('/api/orders/' + currentUserEmail);
+                    const orderResponse = await fetch(API_BASE + '/api/orders/' + currentUserEmail);
                     if (orderResponse.ok) {
                         const orderData = await orderResponse.json();
                         orderHistory = orderData.orders;
@@ -1423,7 +1437,7 @@
             btn.innerHTML = '<span class="spinner"></span> Sending...';
             
             try {
-                const res = await fetch('/api/send-otp', {
+                const res = await fetch(API_BASE + '/api/send-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
@@ -1436,10 +1450,23 @@
                     document.getElementById('otpMessage').innerText = 'OTP sent to ' + email;
                     showToast('Check your email for the OTP!');
                     
+                    if (data.devOtp) {
+                        document.getElementById('devOtpContainer').style.display = 'block';
+                        document.getElementById('devOtpVal').innerText = data.devOtp;
+                        window.autofillOTP = () => {
+                            document.getElementById('loginOtp').value = data.devOtp;
+                            verifyOTP();
+                        };
+                    } else {
+                        document.getElementById('devOtpContainer').style.display = 'none';
+                    }
+
                     if (data.emailUrl) {
                         const linkBtn = document.getElementById('otpLinkBtn');
                         linkBtn.href = data.emailUrl;
                         linkBtn.style.display = 'inline-block';
+                    } else {
+                        document.getElementById('otpLinkBtn').style.display = 'none';
                     }
                 } else {
                     showToast('Failed to send OTP.');
@@ -1462,7 +1489,7 @@
             btn.innerHTML = '<span class="spinner"></span> Verifying...';
 
             try {
-                const res = await fetch('/api/verify-otp', {
+                const res = await fetch(API_BASE + '/api/verify-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentUserEmail, otp })
@@ -1471,13 +1498,13 @@
                 if (res.ok) {
                     // OTP is valid! Now check if profile exists
                     try {
-                        const profileRes = await fetch('/api/profile/' + currentUserEmail);
+                        const profileRes = await fetch(API_BASE + '/api/profile/' + currentUserEmail);
                         if (profileRes.ok) {
                             const data = await profileRes.json();
                             currentUserProfile = data.profile;
                             localStorage.setItem('buyzone_user_profile', JSON.stringify(currentUserProfile));
                             
-                            const orderResponse = await fetch('/api/orders/' + currentUserEmail);
+                            const orderResponse = await fetch(API_BASE + '/api/orders/' + currentUserEmail);
                             if (orderResponse.ok) {
                                 const orderData = await orderResponse.json();
                                 orderHistory = orderData.orders;
@@ -1505,21 +1532,22 @@
         async function saveProfile() {
             const name = document.getElementById('profileName').value;
             const email = document.getElementById('profileEmail').value;
+            const phone = document.getElementById('profilePhone').value;
             const address = document.getElementById('profileAddress').value;
 
-            if (!name || !email || !address) {
+            if (!name || !email || !phone || !address) {
                 showToast('Please fill all details to create profile');
                 return;
             }
 
-            currentUserProfile = { email: currentUserEmail, name, address, phone: document.getElementById('loginEmail').value };
+            currentUserProfile = { email: currentUserEmail, name, address, phone };
             
             const btn = document.getElementById('saveProfileBtn');
             const origText = btn.innerHTML;
             btn.innerHTML = '<span class="spinner"></span> Saving...';
 
             try {
-                await fetch('/api/profile', {
+                await fetch(API_BASE + '/api/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentUserProfile)
@@ -1606,7 +1634,7 @@
 
         async function loadCustomProducts() {
             try {
-                const response = await fetch('/api/products');
+                const response = await fetch(API_BASE + '/api/products');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.products && data.products.length > 0) {
@@ -1655,7 +1683,7 @@
             btn.innerHTML = '<span class="spinner"></span> Adding Product...';
 
             try {
-                const res = await fetch('/api/products', {
+                const res = await fetch(API_BASE + '/api/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product: newProduct })
