@@ -1892,23 +1892,37 @@
             { name: 'Leather Bag', price: '4999', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80', category: 'Fashion' }
         ];
 
-        // Auto-generate 484 more products to make total 500
-        const extraCategories = ['Shoes', 'Electronics', 'Gaming', 'Fashion', 'Home Decor', 'Sports', 'Accessories', 'Beauty'];
+        // Auto-generate 484 more products - unique names & unique picsum images (no repeats)
+        const catProductNames = {
+            'Shoes': ['Running Sneakers','Trail Blazer Boots','Casual Loafers','High-Top Kicks','Slip-On Vans','Oxford Classics','Flip Flops Pro','Trekking Shoes','Court Trainers','Dance Pumps','Basketball Boots','Yoga Flats','Driving Moccasins','Derby Brogues','Chelsea Boots','Wedge Sandals','Espadrilles','Rain Boots','Work Boots','Mule Slides','Skate Shoes','Climbing Shoes','Cycling Cleats','Water Shoes','Formal Derby','Platform Sneaks','Ankle Strap Heels','Penny Loafers','Monk Straps','Desert Boots','Gladiator Sandals','Kitten Heels','Block Heels','Sock Boots','Square Toe Flats','Pointed Pumps','Thong Sandals','Slide Mules','Lace-Up Oxfords','Metallic Sneakers','Neon Runners','Chunky Platform','Velvet Slippers','Suede Chelseas','Patent Loafers','Glitter Heels','Clog Sandals','Hiking Boots','Snow Boots','Combat Boots'],
+            'Electronics': ['4K Smart TV','Noise-Cancel Headphones','Wireless Charger Pad','Bluetooth Speaker','Portable Power Bank','USB-C Hub','Smart Home Plug','LED Desk Lamp','Gaming Router','Webcam HD','Action Camera','Drone Mini','Smart Doorbell','Air Purifier Smart','Robot Vacuum','Coffee Maker Smart','Electric Toothbrush','Digital Photo Frame','Compact Projector','Solar Charger','Dash Cam','GPS Tracker','Smart Scale','E-Reader Pro','Tablet Stand','Ring Light','Streaming Stick','Smart Bulb Set','Portable Fan','NFC Reader','Thermal Camera','Mini Printer','Foldable Keyboard','Smart Plug 4-Pack','Motion Sensor','Door Lock Smart','Video Doorbell','Wireless Gamepad','Retractable Cable','Surge Protector','Network Switch','PoE Injector','SSD Portable','Flash Drive 256GB','Memory Card 512GB','VR Headset','AR Glasses','Smart Mirror','Laser Keyboard','Holographic Display'],
+            'Gaming': ['Joystick Pro Elite','Racing Wheel Set','Flight Sim Yoke','Stream Deck Mini','Capture Card 4K','RGB Mousepad XL','Chair Lumbar Pillow','Monitor Arm Dual','Console Cooling Fan','Controller Charging Dock','Gaming Glasses','Mic Boom Arm','Footrest Gamer','Wrist Rest Gel','Keyboard Wrist Pad','LED Strip Gaming','Headset Stand RGB','Controller Skin Pack','Console Stand V2','Gaming Backpack','Anti-Glare Screen','Lap Desk Gaming','Gunstock Mount VR','VR Sensor Bar','Retro Handheld Console','Portable Gaming Screen','8-Bit Arcade Stick','Pinball Machine Mini','Light Gun Classic','Balance Board Game','Fitness Ring Game','Rhythm Mat Pro','Tilt Controller','Fishing Rod Game','Tennis Racket Game','Golf Club Kit Game','Baseball Bat Game','Boxing Gloves Game','Dance Mat Premium','Shooting Range Kit','Puzzle Cube Speed','Rubik Bluetooth','Chess Clock Pro','Strategy Board Game','Card Sleeve Pack','Dice Tower Set','Miniature Paint Set','D&D Starter Kit','Tabletop Mat','Token Set Deluxe'],
+            'Fashion': ['Linen Blazer','Silk Blouse','Cargo Joggers','Striped Polo Shirt','Quilted Vest','Trench Coat','Cashmere Sweater','Wrap Dress','Mom Jeans','Puffer Jacket','Halter Top','Palazzo Pants','Bodycon Dress','Windbreaker Jacket','Knit Cardigan','Bermuda Shorts','Maxi Skirt','Shacket Plaid','Turtleneck Ribbed','Utility Jacket','Chiffon Top','Floral Midi Dress','Leather Pants','Off-Shoulder Top','Paperbag Trousers','Satin Slip Dress','Ruched Bodysuit','Corset Top','Sequin Blazer','Asymmetric Hem Top','Tie-Dye Tee','Velvet Leggings','Boho Kimono','Sailor Collar Blouse','Pleated Culottes','Suede Skirt','Fringe Jacket','Smock Dress','Drop-Shoulder Sweat','Lettuce-Edge Crop','Side-Slit Maxi','Balloon Sleeve Top','Square-Neck Dress','Biker Shorts Set','Tennis Skirt','Pinstripe Suit','Houndstooth Coat','Patchwork Jeans','Sherpa Hoodie','Tie-Front Shirt'],
+            'Home Decor': ['Macrame Wall Hanging','Ceramic Vase Set','Rattan Mirror Round','Boho Throw Pillow','Woven Basket Large','Canvas Wall Art','Terracotta Plant Pot','Fairy Light String','Velvet Curtains','Jute Area Rug','Floating Wall Shelf','Acrylic Photo Frame','Aromatherapy Diffuser','Soy Wax Candle Set','Linen Table Runner','Wicker Storage Basket','Wooden Fruit Bowl','Metal Wall Clock','Glass Terrarium','Faux Fur Throw Blanket','Bamboo Tray Set','Marble Coaster Set','Geometric Planter','Succulent Pot Trio','Rope Hanging Planter','Iron Candle Holder','Mosaic Lantern','Vintage Map Print','Wooden Letter Board','Felt Ball Garland','Dried Flower Bouquet','Pressed Flower Frame','Sea Glass Bowl','Driftwood Wall Art','Resin Bookends','Knitted Pouf Ottoman','Hammock Chair Indoor','Floor Lamp Arc','Table Lamp Concrete','Cage Pendant Light','Edison Bulb String','Solar Lantern Garden','Stone Serving Board','Acacia Wood Bowl','Copper Mug Set','Enamel Dutch Oven','Cast Iron Skillet','Bamboo Cutting Board','Herb Garden Kit','Compost Bin Countertop'],
+            'Sports': ['Foam Yoga Block','Resistance Band Set','Jump Rope Speed','Pull-Up Bar Doorway','Ab Wheel Roller','Push-Up Handles','Dumbbell Hex 5kg','Kettlebell Cast 8kg','Medicine Ball 3kg','Ankle Weights Pair','Gym Gloves Grip','Weight Belt Lever','Lifting Straps Pro','Knee Sleeve Support','Elbow Brace Wrap','Wrist Guard Sport','Compression Socks','Hydration Vest 5L','Running Belt Slim','Headband Sweat','Silicone Swim Cap','Swim Goggles Anti-Fog','Kickboard Float','Swim Fins Silicone','Pull Buoy Float','Cycling Gloves Gel','Padded Shorts Cycle','Helmet MTB Trail','Bike Lock U-Bar','Tire Pump Mini CO2','Yoga Strap Stretch','Meditation Cushion','Balance Ball Sit','Wobble Board Core','Agility Ladder Speed','Cone Set Training','Hurdle Set Low','Parachute Sprint','Weighted Vest 5kg','Battle Rope 10m','TRX Suspension Kit','Boxing Bag Speed','Punching Gloves 12oz','Mouth Guard Sports','Shin Guard Foam','Goalkeeper Gloves','Tennis Overgrip','Badminton Shuttles','Table Tennis Paddle','Volleyball Net Set','Football Pump'],
+            'Accessories': ['Leather Wallet Slim','Card Holder Metal','Passport Cover Genuine','Belt Woven Canvas','Sunglasses Aviator','Sunglasses Wayfarer','Hair Clip Claw','Silk Hair Scarf','Beanie Knit Winter','Baseball Cap Structured','Bucket Hat Cotton','Fedora Hat Felt','Wide Brim Sun Hat','Trucker Cap Mesh','Beaded Bracelet Set','Charm Bracelet Silver','Cuff Bracelet Gold','Statement Ring Set','Hoop Earrings Large','Stud Earring Pack','Layered Necklace Set','Pendant Necklace Dainty','Choker Velvet','Pearl Necklace Faux','Brooch Enamel Pin','Watch Leather Strap','Watch Mesh Strap','Smart Watch Band','Fitness Tracker Band','Phone Chain Crossbody','Mini Bag Clip-On','Fanny Pack Retro','Tote Bag Canvas','Backpack Mini Leather','Clutch Evening','Coin Purse Zip','Keychain Tassel','Luggage Tag Monogram','Travel Pillow Inflatable','Packing Cube Set','Umbrella Windproof','Scarf Cashmere Blend','Gloves Leather Lined','Earmuffs Fleece','Neck Gaiter Multi','Face Mask Reusable','Hair Tie Silk','Bobby Pin Rhinestone','Hair Band Velvet','Scrunchie Pack 10'],
+            'Beauty': ['Vitamin C Serum','Hyaluronic Acid Mist','Retinol Night Cream','SPF 50 Sunscreen','Micellar Cleansing Water','Foaming Face Wash','Clay Detox Mask','Sheet Mask Pack 10','Eye Cream Peptide','Lip Balm SPF Set','BB Cream Tinted','Setting Spray Dewy','Brow Pencil Micro','Mascara Volumizing','Eyeliner Liquid Pen','Eyeshadow Palette 18','Contour Kit Cream','Blush Powder Rosy','Highlighter Glow','Foundation Serum','Concealer Full Cover','Lip Liner Set 6','Lipstick Matte Red','Lip Gloss Plumping','Nail Polish Set 12','Gel Nail Strips','Press-On Nails Kit','Cuticle Oil Pen','Nail File Glass','Hand Cream Intense','Body Lotion Shea','Exfoliating Scrub','Dry Brush Body','Bath Bomb Set 6','Shower Gel Luxury','Hair Mask Deep Repair','Argan Oil Hair','Curl Cream Define','Edge Control Gel','Dry Shampoo Volume','Hair Serum Split-End','Scalp Scrub Clarify','Boar Bristle Brush','Wide Tooth Comb','Satin Pillowcase','Makeup Brush Set 12','Beauty Blender Original','Silicone Face Brush','Jade Face Roller','Gua Sha Stone']
+        };
 
-        const adjectives = ['Premium', 'Luxury', 'Classic', 'Modern', 'Sleek', 'Pro', 'Ultra', 'Essential', 'Elite', 'Smart', 'Advanced'];
-        const nouns = ['Edition', 'Series', 'Kit', 'Bundle', 'Pack', 'Collection', 'Set', 'Version', 'Model', 'Gear'];
+        const extraCategories = ['Shoes', 'Electronics', 'Gaming', 'Fashion', 'Home Decor', 'Sports', 'Accessories', 'Beauty'];
+        const usedNames = new Set(products.map(p => p.name));
+        const nameCounters = {};
+        extraCategories.forEach(c => nameCounters[c] = 0);
 
         for (let i = 1; i <= 484; i++) {
-            const catObj = extraCategories[i % extraCategories.length];
-            const adjObj = adjectives[i % adjectives.length];
-            const nounObj = nouns[i % nouns.length];
+            const catObj = extraCategories[(i - 1) % extraCategories.length];
+            const namesArr = catProductNames[catObj];
+            const nameIdx = nameCounters[catObj] % namesArr.length;
+            let baseName = namesArr[nameIdx];
+            const variant = Math.floor(nameCounters[catObj] / namesArr.length) + 1;
+            const productName = variant > 1 ? `${baseName} v${variant}` : baseName;
+            nameCounters[catObj]++;
 
-            const keyword = catObj.toLowerCase().split(' ')[0];
-
+            // Unique picsum image - seed = i + 100 to avoid conflict with base 16 products
             products.push({
-                name: `${adjObj} ${catObj} ${nounObj} ${i}`,
-                price: Math.floor(Math.random() * (15000 - 999) + 999).toString(),
-                image: `https://loremflickr.com/400/400/${keyword}?lock=${i}`,
+                name: productName,
+                price: Math.floor(Math.random() * (15000 - 499) + 499).toString(),
+                image: `https://picsum.photos/seed/bz${i + 100}/400/400`,
                 category: catObj
             });
         }
@@ -2088,14 +2102,27 @@
 
         function selectCategory(cat) {
             selectedCategory = cat;
+
+            // If home page is hidden (user is on a subpage), navigate back first
+            const homePage = document.getElementById('home');
+            if (homePage && (homePage.style.display === 'none' || homePage.style.display === '')) {
+                // Go back to home - call goHome if available, otherwise show home manually
+                hideAllPages();
+                homePage.style.display = 'block';
+                const productsSection = document.getElementById('products');
+                if (productsSection) productsSection.style.display = 'block';
+            }
+
             renderCategoryPills();
             renderProducts();
-            
+
             // Highlight active category circle
             const circleItems = document.querySelectorAll('.fk-category-item');
             circleItems.forEach(item => {
-                const label = item.querySelector('.fk-category-label').innerText;
-                const matches = (cat === 'All' && label === 'All Products') || 
+                const labelEl = item.querySelector('.fk-category-label');
+                if (!labelEl) return;
+                const label = labelEl.innerText;
+                const matches = (cat === 'All' && label === 'All Products') ||
                                 (cat === 'Home Decor' && label === 'Home & Living') ||
                                 (cat === 'Sports' && label === 'Sports & Fitness') ||
                                 (cat === 'Beauty' && label === 'Beauty & Care') ||
@@ -2106,6 +2133,14 @@
                     item.classList.remove('active');
                 }
             });
+
+            // Smooth scroll to products section
+            setTimeout(() => {
+                const productsEl = document.getElementById('products');
+                if (productsEl) {
+                    productsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 150);
         }
 
         function toggleWishlist(name, event) {
