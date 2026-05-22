@@ -991,7 +991,7 @@
 
         /* BANNER CAROUSEL */
         .carousel-container {
-            margin: 40px 8%;
+            margin: 10px 8% 30px;
             position: relative;
             border-radius: 24px;
             overflow: hidden;
@@ -1130,6 +1130,85 @@
             background: #60a5fa;
             width: 24px;
             border-radius: 10px;
+        }
+
+        /* FLIPKART STYLE CATEGORY BAR */
+        .fk-category-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 4%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin: 100px 8% 20px;
+            gap: 15px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 100;
+        }
+
+        .fk-category-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .fk-category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 80px;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .fk-category-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .fk-category-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .fk-category-item:hover .fk-category-circle,
+        .fk-category-item.active .fk-category-circle {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .fk-category-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-align: center;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        .fk-category-item:hover .fk-category-label,
+        .fk-category-item.active .fk-category-label {
+            color: #fff;
+        }
+
+        .features-grid {
+            display: none !important;
         }
 
         /* CATEGORY PILLS */
@@ -1430,6 +1509,31 @@
         .suggestion-price { color: #2563eb; }
         .step-circle { background: rgba(0, 0, 0, 0.05); border: 2px solid rgba(0, 0, 0, 0.08); color: #64748b; }
         .timeline-line { background: rgba(0, 0, 0, 0.08); }
+
+        /* LIGHT THEME OVERRIDES FOR FLIPKART CATEGORY BAR */
+        .fk-category-bar {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        .fk-category-circle {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.03);
+        }
+        .fk-category-label {
+            color: #475569;
+        }
+        .fk-category-item:hover .fk-category-label,
+        .fk-category-item.active .fk-category-label {
+            color: #0f172a;
+        }
+        .fk-category-item:hover .fk-category-circle,
+        .fk-category-item.active .fk-category-circle {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
@@ -1521,15 +1625,47 @@
             </div>
         </nav>
 
-        <section class="hero" id="home">
-            <div class="hero-text animate-fade-up delay-100">
-                <h1>Next-Gen <span>Ecommerce</span> Experience</h1>
-                <p>Discover a world of premium products with a fluid, modern, and futuristic shopping interface designed
-                    to elevate your style.</p>
-                <button class="btn" style="padding: 16px 36px; font-size: 18px;">Explore Collection</button>
+        <div id="home" class="animate-fade-in" style="display: block;">
+            <!-- Category Circle Bar -->
+            <div class="fk-category-bar">
+                <div class="fk-category-item active" onclick="selectCategory('All')">
+                    <div class="fk-category-circle">🛍️</div>
+                    <div class="fk-category-label">All Products</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Electronics')">
+                    <div class="fk-category-circle">💻</div>
+                    <div class="fk-category-label">Electronics</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Fashion')">
+                    <div class="fk-category-circle">👕</div>
+                    <div class="fk-category-label">Fashion</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Shoes')">
+                    <div class="fk-category-circle">👟</div>
+                    <div class="fk-category-label">Shoes</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Home Decor')">
+                    <div class="fk-category-circle">🛋️</div>
+                    <div class="fk-category-label">Home & Living</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Sports')">
+                    <div class="fk-category-circle">⚽</div>
+                    <div class="fk-category-label">Sports & Fitness</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Gaming')">
+                    <div class="fk-category-circle">🎮</div>
+                    <div class="fk-category-label">Gaming</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Beauty')">
+                    <div class="fk-category-circle">💄</div>
+                    <div class="fk-category-label">Beauty & Care</div>
+                </div>
+                <div class="fk-category-item" onclick="selectCategory('Accessories')">
+                    <div class="fk-category-circle">🕶️</div>
+                    <div class="fk-category-label">Accessories</div>
+                </div>
             </div>
-            <div class="hero-img animate-fade-up delay-200">🛍️</div>
-        </section>
+        </div>
 
         <div class="features-grid animate-fade-up delay-300">
             <div class="feature-box">
@@ -1954,6 +2090,22 @@
             selectedCategory = cat;
             renderCategoryPills();
             renderProducts();
+            
+            // Highlight active category circle
+            const circleItems = document.querySelectorAll('.fk-category-item');
+            circleItems.forEach(item => {
+                const label = item.querySelector('.fk-category-label').innerText;
+                const matches = (cat === 'All' && label === 'All Products') || 
+                                (cat === 'Home Decor' && label === 'Home & Living') ||
+                                (cat === 'Sports' && label === 'Sports & Fitness') ||
+                                (cat === 'Beauty' && label === 'Beauty & Care') ||
+                                (label === cat);
+                if (matches) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
         }
 
         function toggleWishlist(name, event) {
@@ -2136,8 +2288,8 @@
             document.getElementById('searchInput').value = '';
             hideAllPages();
             
-            document.getElementById('home').style.display = 'flex';
-            document.querySelector('.features-grid').style.display = 'grid';
+            document.getElementById('home').style.display = 'block';
+            document.querySelector('.features-grid').style.display = 'none';
             document.getElementById('products').style.display = 'block';
             const carousel = document.querySelector('.carousel-container');
             if (carousel) carousel.style.display = 'block';
