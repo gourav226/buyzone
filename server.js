@@ -389,7 +389,7 @@ app.post('/api/products', async (req, res) => {
 
 // Default route to serve the main HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'buyzone_complete_modified_html.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = 3000;
